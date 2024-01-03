@@ -843,16 +843,18 @@ uint32_t tuh_midi_stream_read (uint8_t dev_addr, uint8_t *p_cable_num, uint8_t *
       *p_buffer++ = p_midi_host->stream_read.buffer[idx];
     }
     bytes_buffered += bytes_to_add_to_stream;
-    nread = 0;
-    if (tu_fifo_peek(&p_midi_host->rx_ff, &one_byte))
-    {
-      uint8_t new_cable = (one_byte >> 4) & 0xf;
-      if (new_cable == *p_cable_num)
-      {
-        // still on the same cable. Continue reading the stream
-        nread = tu_fifo_read_n(&p_midi_host->rx_ff, p_midi_host->stream_read.buffer, 4);
-      }
-    }
+    // CDD - return one message at a time and force the consumer to read down the queue
+    return bytes_buffered;
+    // nread = 0;
+    // if (tu_fifo_peek(&p_midi_host->rx_ff, &one_byte))
+    // {
+    //   uint8_t new_cable = (one_byte >> 4) & 0xf;
+    //   if (new_cable == *p_cable_num)
+    //   {
+    //     // still on the same cable. Continue reading the stream
+    //     nread = tu_fifo_read_n(&p_midi_host->rx_ff, p_midi_host->stream_read.buffer, 4);
+    //   }
+    // }
   }
 
   return bytes_buffered;
